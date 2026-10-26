@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<!--
+  三态对决 — 物质三态变化对抗性卡牌游戏（七年级物理课堂）
+  Copyright 2026 TJU1895-EFZ
+  Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta data-page-node-id="9XZwlzb4qZk4uabHSCwQqJ" content="width=device-width, initial-scale=1.0" name="viewport">
+<title data-page-node-id="YV48khKMJKwY1uRN0OdwWb" data-pnid-children="CUwbBuv5MYlIsQt8Bt9odM">三态对决 · 物质三态变化卡牌游戏</title>
+<style data-page-node-id="XorBLF2lNavMCXUJ7evvH5" data-pnid-children="zsu17iLpgwCY7szfmh2Hdh">
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+    background: linear-gradient(135deg, #0f1b3d 0%, #1a2a52 60%, #14213d 100%);
+    color: #eef2f7; min-height: 100vh; padding: 16px;
+  }
+  header { text-align: center; margin-bottom: 14px; }
+  header h1 { font-size: 30px; letter-spacing: 6px; color: #ffd166; text-shadow: 0 2px 8px rgba(255,209,102,.35); }
+  header .sub { font-size: 13px; color: #9db3d6; margin-top: 4px; }
+
+  .topbar { display: flex; justify-content: center; gap: 16px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+  .pill {
+    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15);
+    border-radius: 20px; padding: 6px 18px; font-size: 14px;
+  }
+  .pill b { color: #ffd166; }
+  button.btn {
+    background: linear-gradient(135deg, #ffd166, #ff9f43); color: #1a2a52; border: none;
+    border-radius: 10px; padding: 9px 22px; font-size: 15px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 3px 10px rgba(255,159,67,.35); transition: transform .1s;
+  }
+  button.btn:hover { transform: translateY(-2px); }
+  button.btn.ghost { background: rgba(255,255,255,.12); color: #eef2f7; box-shadow: none; border: 1px solid rgba(255,255,255,.25); }
+
+  .arena { display: grid; grid-template-columns: 1fr 300px 1fr; gap: 14px; max-width: 1400px; margin: 0 auto; }
+
+  .player-panel {
+    background: rgba(255,255,255,.06); border-radius: 16px; padding: 14px;
+    border: 2px solid transparent; transition: all .3s;
+  }
+  .player-panel.active { border-color: #ffd166; box-shadow: 0 0 24px rgba(255,209,102,.25); }
+  .player-panel.done { opacity: .55; }
+  .p-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .p-name { font-size: 19px; font-weight: 700; }
+  .p-score { font-size: 22px; font-weight: 800; color: #ffd166; }
+  .badges { display: flex; gap: 6px; margin-bottom: 6px; min-height: 24px; flex-wrap: wrap; }
+  .badge { font-size: 12px; background: #b23a48; border-radius: 6px; padding: 3px 8px; }
+  .badge.wind { background: #2a9d8f; }
+
+  .state-box { text-align: center; margin-bottom: 10px; }
+  .state-icon { font-size: 52px; line-height: 1; transition: transform .4s; }
+  .state-icon.pop { animation: pop .5s; }
+  @keyframes pop { 0%{transform:scale(.3) rotate(-20deg);} 70%{transform:scale(1.25);} 100%{transform:scale(1);} }
+  .state-label { font-size: 16px; font-weight: 700; margin-top: 4px; }
+  .streak { font-size: 12px; color: #7fd8be; margin-top: 2px; }
+
+  .hand { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; min-height: 130px; }
+  .card {
+    background: #fdfdfd; color: #222; border-radius: 10px; padding: 8px 6px;
+    text-align: center; cursor: pointer; user-select: none; position: relative;
+    border: 2px solid #ccc; transition: transform .12s, box-shadow .12s; min-height: 104px;
+    display: flex; flex-direction: column; justify-content: center; gap: 2px;
+  }
+  .card:hover { transform: translateY(-4px) scale(1.03); box-shadow: 0 6px 14px rgba(0,0,0,.4); }
+  .card .cname { font-size: 16px; font-weight: 800; }
+  .card .ctag { font-size: 11px; border-radius: 4px; padding: 1px 4px; display: inline-block; color: #fff; }
+  .card .cdesc { font-size: 10px; color: #666; line-height: 1.3; }
+  .card.heat    { border-color: #e63946; background: #fff3f0; }
+  .card.heat .ctag { background: #e63946; }
+  .card.cool    { border-color: #2f6fdb; background: #eef4ff; }
+  .card.cool .ctag { background: #2f6fdb; }
+  .card.change  { border-color: #7b2cbf; background: #f6eeff; }
+  .card.change .ctag { background: #7b2cbf; }
+  .card.interf  { border-color: #444; background: #f0f0f0; }
+  .card.interf .ctag { background: #444; }
+  .card.disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+  .center-col { display: flex; flex-direction: column; gap: 10px; }
+  .deckbox {
+    background: rgba(255,255,255,.07); border-radius: 14px; padding: 12px; text-align: center;
+  }
+  .deck-visual {
+    width: 92px; height: 128px; margin: 6px auto; border-radius: 10px;
+    background: linear-gradient(145deg, #ffd166, #e07a5f);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 34px; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,.4);
+    box-shadow: 0 4px 12px rgba(0,0,0,.4); border: 3px solid #fff3;
+  }
+  .logbox {
+    background: rgba(0,0,0,.3); border-radius: 14px; padding: 10px; flex: 1;
+    overflow-y: auto; max-height: 300px; font-size: 13px; line-height: 1.7;
+  }
+  .logbox div { border-bottom: 1px dashed rgba(255,255,255,.1); padding: 3px 0; }
+  .log-good { color: #7fd8be; }
+  .log-bad  { color: #ff8fa3; }
+  .log-info { color: #a9c4e8; }
+  .log-gold { color: #ffd166; font-weight: 700; }
+
+  .knowbox { background: rgba(255,255,255,.05); border-radius: 14px; padding: 10px; font-size: 12px; }
+  .knowbox h3 { font-size: 14px; color: #ffd166; margin-bottom: 6px; }
+  .knowbox table { width: 100%; border-collapse: collapse; }
+  .knowbox td { padding: 3px 4px; border-bottom: 1px solid rgba(255,255,255,.1); }
+  .knowbox .up { color: #ff8fa3; } .knowbox .down { color: #7fc8f8; }
+
+  .toast {
+    position: fixed; top: 18px; left: 50%; transform: translateX(-50%);
+    background: #222; color: #fff; padding: 12px 26px; border-radius: 12px;
+    font-size: 16px; font-weight: 700; opacity: 0; pointer-events: none;
+    transition: opacity .3s; z-index: 99; max-width: 80vw; text-align: center;
+    box-shadow: 0 6px 20px rgba(0,0,0,.5);
+  }
+  .toast.show { opacity: 1; }
+  .toast .tip { display: block; font-size: 12px; font-weight: 400; color: #ffd166; margin-top: 4px; }
+
+  .overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.75); display: none;
+    align-items: center; justify-content: center; z-index: 100;
+  }
+  .overlay.show { display: flex; }
+  .overlay .panel {
+    background: #1a2a52; border: 2px solid #ffd166; border-radius: 20px;
+    padding: 36px 48px; text-align: center;
+  }
+  .overlay h2 { font-size: 34px; color: #ffd166; margin-bottom: 10px; }
+  .overlay p { font-size: 16px; margin-bottom: 20px; }
+</style>
+</head>
+<body data-page-node-id="avs1i2YbaYfNmUsQkx5R9j">
+
+<header data-page-node-id="8gzcmP7OIm4VSBGEVrmaZF">
+  <h1 data-page-node-id="pC7ThF1e5LBEjg3J9TWkYb"><!--pnid:Eww54ueG9BQRe4Z1A7q7uk-->三 态 对 决</h1>
+  <div data-page-node-id="mCFNkGGCPx1zHES4sxBiyh" class="sub"><!--pnid:wfi6kkLVhKEJWvzqBB98oT-->物质三态变化 · 对抗性卡牌游戏 —— 出变化牌需要：正确的起点状态 + 配对的能量牌</div>
+</header>
+
+<div data-page-node-id="FlPNa3drIDSdwl1tif2yr6" class="topbar">
+  <div data-page-node-id="2ecDdOU53yQlDY8hNmCkZp" class="pill"><!--pnid:HjWxsJD7CHWCdqqKrBu0zV-->模式：<select data-page-node-id="63CsW3skFNqsX1l0tonboQ" id="modeSel" style="background:#1a2a52; color:#fff; border:none; border-radius:6px; padding:4px 8px">
+    <option data-page-node-id="p3cgVyt1UyLhMRAUWUUHTt" value="pvp"><!--pnid:oDVL0H8TlyK1YYLnO83OWY-->双人对战（同屏）</option>
+    <option data-page-node-id="ujvJ4i2BIrbTBIKAGvqYNK" value="ai"><!--pnid:X8uqWHpFQy6yTe3LgbTgu9-->人机对战</option>
+  </select></div>
+  <div data-page-node-id="DUdjdOUmNCfS1HPKuWYHkw" class="pill"><!--pnid:KyunkSvkX21Gw8nBdvq4n5-->🎴 牌堆剩余 <b data-page-node-id="G5y0kXKqfl3OZtilqBFRaL" id="deckCnt"><!--pnid:mq6xknvOJcN73gqEO59FLe-->40</b></div>
+  <div data-page-node-id="q09sgsUTkwlEo7TTocGMb5" class="pill"><!--pnid:YJavMwvBikr9OaE1nMZyoC-->🏆 目标 <b data-page-node-id="RqoMFFpHCUdWh9LbOpXo3u"><!--pnid:8gL5CgY0GpKsMil4KuKwzP-->10 分</b><!--pnid:ggNPdtR4gkedG0HICwzemV-->（三连击额外 +3）</div>
+  <button data-page-node-id="KTPzVg71LLHDufLlzZpqw2" class="btn ghost" onclick="restart()"><!--pnid:icb2HDScJaWmHg7isQOiBy-->重新开局</button>
+  <button data-page-node-id="E4vXyt5gXS0OwUgwhjVYHA" class="btn" id="passBtn" onclick="passTurn()"><!--pnid:X8WUDViXB6vej3qj0oWLdk-->跳过回合</button>
+</div>
+
+<div data-page-node-id="i06bgV9J5PJa40w0nzKrJw" class="arena">
+  <!--pnid:SCYMRkCbWv6CPWOwk4EhTf--><!-- 玩家1 -->
+  <div data-page-node-id="yS4PMtuDGp03mzkhXgwtcI" class="player-panel" id="panel0">
+    <div data-page-node-id="b9s7xwrR1SN5QgdTzzEEab" class="p-head"><span data-page-node-id="yNJrS9TRgDazu7xvL68mEv" class="p-name" id="name0"><!--pnid:CUBtMlnkOHsbJIozPiFQbO-->玩家一</span><span data-page-node-id="hnXvurnaXdZebgxbhKRsLB" class="p-score" id="score0"><!--pnid:xtSiWC9dnOr7gJXkqalzKe-->0 分</span></div>
+    <div data-page-node-id="YigfekIbOKbGdjGHpjex9F" class="badges" id="badges0"></div>
+    <div data-page-node-id="aCJgstJ0pzlkS3Z3DBhVGj" class="state-box">
+      <div data-page-node-id="X0ErDnrIu6HJ2Kih4LTeaD" class="state-icon" id="icon0"><!--pnid:alvafUC7rQETysEi51qr9k-->❄️</div>
+      <div data-page-node-id="RmOQ7yUNrvwCCv5HL1cOqn" class="state-label" id="label0"><!--pnid:HA9Gq4UtcdOckFCLc17xjB-->固态</div>
+      <div data-page-node-id="BW26SANlZ9LdZ82sPqccSz" class="streak" id="streak0"></div>
+    </div>
+    <div data-page-node-id="c8dsBjkpA1iXlgdEUgKzwh" class="hand" id="hand0"></div>
+  </div>
+
+  <!--pnid:TcfgBEjrkeKisljHxkunpN--><!-- 中央 -->
+  <div data-page-node-id="GdzEE3ZOswizduuNUew5bc" class="center-col">
+    <div data-page-node-id="poo8His0u1RkjDxuojwi3o" class="deckbox">
+      <div data-page-node-id="n8h7RWNhHO8EF8ch2VMVij" class="deck-visual"><!--pnid:fSJDFCBDAO3T7Cjx58nnx1-->🀄</div>
+      <div data-page-node-id="dPEMuNXO9aDILUEoLRKsy2" id="turnHint" style="font-size:13px; color:#9db3d6"><!--pnid:2o297JRLWkaRdNNDMbg3pg-->轮到 玩家一 出牌</div>
+    </div>
+    <div data-page-node-id="PDOL0i2Je94hu5A8ylk3tp" class="logbox" id="logbox"></div>
+    <div data-page-node-id="31jBxamitcjVB0smbxZHID" class="knowbox">
+      <h3 data-page-node-id="eBv4bIMdNfC9MUJhgte7aT"><!--pnid:CuozRC4OmKV94t58pO43Ss-->📖 六种物态变化速查</h3>
+      <table data-page-node-id="6WJlRWqfL0yzSmmEgYLbIM">
+        <tr data-page-node-id="CEeyO5QlrUgBaiAARrIh4y"><td data-page-node-id="pUU6Mo22WuzTZTFBXFl5iO"><!--pnid:lJN3BEMeygr1oeAwqrqKwM-->熔化</td><td data-page-node-id="vEbkaFLXuJR0BmfTNqL5sO"><!--pnid:51cldza3ODQCiTd88eMSWD-->固 → 液</td><td data-page-node-id="e4Aw1Rf3g75TvvDtgSq5fm" class="up"><!--pnid:ry2GOv0l3iIpY9T41eEImP-->吸热▲</td></tr>
+        <tr data-page-node-id="5OMs1W72GFCfydpE72hqOZ"><td data-page-node-id="eaN6niMXTZ4KotupUv8q0H"><!--pnid:9nzT40PjO6BKbNBMWoo61F-->凝固</td><td data-page-node-id="QqkfY4Ax7vhyuEoOGUjQpr"><!--pnid:YF3IBUJMZb2ISanuScm0yl-->液 → 固</td><td data-page-node-id="8nhQUsCzejTt1ZpUEEd3P2" class="down"><!--pnid:W9da6ZN2R8oZpxGX13Q5Xc-->放热▼</td></tr>
+        <tr data-page-node-id="t6i2HKFmoZgmjxnsaNQOR8"><td data-page-node-id="oDvkMKDqZAmF3fIsMtVQTG"><!--pnid:z9yPahMrHqjDmjEgePTtj6-->汽化</td><td data-page-node-id="jHYtKBubasYgqlztXD0qS7"><!--pnid:AVXcdy8lIChxaUyr97s7C2-->液 → 气</td><td data-page-node-id="x8L9XkeOdVxEkHPFZKCNEw" class="up"><!--pnid:ldLgwgymTt5RLdcdVfC87S-->吸热▲</td></tr>
+        <tr data-page-node-id="26797HjKjBWQkeBbJ87DJz"><td data-page-node-id="oXqUdskBIFyUNLl29hnkg1"><!--pnid:8xwy8khQjy7ozvBYmhSljg-->液化</td><td data-page-node-id="gn3KXPfji2JjEevm2gxhgS"><!--pnid:PqUJ0oG4bnZRmJPfbFkFhD-->气 → 液</td><td data-page-node-id="BZ4nBatCjX5YuXrrFqWv8W" class="down"><!--pnid:6oPpQbqiPxiYqB7Z4L09Sj-->放热▼</td></tr>
+        <tr data-page-node-id="rl5sDkqe1tDbB4cYKpGC21"><td data-page-node-id="68nTqN6N0p47tMTw8BUUSU"><!--pnid:I8HWK3zXCdxuFyISYhMKnX-->升华</td><td data-page-node-id="h8AyC2Irj61IHWfv2CKSw5"><!--pnid:XPMQW231HYeFpRMHBEVEtW-->固 → 气</td><td data-page-node-id="MlTEU4KondqXLomf71CPA1" class="up"><!--pnid:kzRCpfQOQBe9qYuT7OgKpk-->吸热▲</td></tr>
+        <tr data-page-node-id="msEY7mFbiqZRbiuzEwqe5J"><td data-page-node-id="tHdDLoqbOlEXysdFlwF5fA"><!--pnid:nKJScyqLRLiLviuZvuA4ph-->凝华</td><td data-page-node-id="jfRULwgZJ4lUVzCB3Qd6Ba"><!--pnid:zzF1IPS55hdQyxX5WRITeT-->气 → 固</td><td data-page-node-id="7HUKOlRVvcbUmxrpZQ1nZs" class="down"><!--pnid:t5vpBIiWpmrHV1B6ImBZ6C-->放热▼</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!--pnid:yu2dz6Nk7qKp9OvBRj0M12--><!-- 玩家2 -->
+  <div data-page-node-id="bIhlcoLLN0yeAV5Jn6Rup9" class="player-panel" id="panel1">
+    <div data-page-node-id="wjBGJTFxIYeTBPZVCJ0gZL" class="p-head"><span data-page-node-id="n1n9AiTjuKReegKsJWwSUq" class="p-name" id="name1"><!--pnid:ZuFCfhFxPNDoyHb7xbJfW2-->玩家二</span><span data-page-node-id="jZpDiiJLBrRwM83XLbOYxa" class="p-score" id="score1"><!--pnid:ALIFSDF1yji5sk6bHa8UtU-->0 分</span></div>
+    <div data-page-node-id="uIPulvToyuLhdoafzHdQjY" class="badges" id="badges1"></div>
+    <div data-page-node-id="h7Ut6zYqWOLeKbit5zjm3G" class="state-box">
+      <div data-page-node-id="kcf0WliSVacxGMhZTQMbNJ" class="state-icon" id="icon1"><!--pnid:P8QMTchqeBrryyqX8mRA9D-->❄️</div>
+      <div data-page-node-id="L0VWPxeIS5yFcmvZnRGquk" class="state-label" id="label1"><!--pnid:YDxO27IavRPh96xdO2KK9Z-->固态</div>
+      <div data-page-node-id="3HsinTPZebdThglCPfExyG" class="streak" id="streak1"></div>
+    </div>
+    <div data-page-node-id="OdUmWiwPY9aadm1H7i9yRW" class="hand" id="hand1"></div>
+  </div>
+</div>
+
+<div data-page-node-id="vptz4Cs2FcwNbWGuTBQ9WD" class="toast" id="toast"></div>
+
+<div data-page-node-id="etkQq1Hl1TQAETs3bQfOn3" class="overlay" id="winOverlay">
+  <div data-page-node-id="mpca4rGr1OXEHfx2M6ThNi" class="panel">
+    <h2 data-page-node-id="UCBrLuClUCgzqDEfP3upOd" id="winTitle"><!--pnid:S98XOrzYR9RI7rNavR8QJh-->🎉 玩家一 获胜！</h2>
+    <p data-page-node-id="d3CWhjUC7Y0fqBanZvRNaF" id="winDetail"></p>
+    <button data-page-node-id="1QoZ8aGEWtoTK8L8vDuLK5" class="btn" onclick="restart()"><!--pnid:YWJfcr1DINFmmr48LNphRT-->再来一局</button>
+  </div>
+</div>
+
+<script data-page-node-id="ZyBXYXsL17SneNvqB5s1ar" data-pnid-children="xBluQG3m8GNH81eWOnbnTN">
+/* ================= 数据定义 ================= */
+const STATE_EMOJI = { '固态': '❄️', '液态': '💧', '气态': '💨' };
+
+const CHANGES = {
+  '熔化': { from: '固态', to: '液态', energy: '加热', heat: '吸热▲' },
+  '凝固': { from: '液态', to: '固态', energy: '冷却', heat: '放热▼' },
+  '汽化': { from: '液态', to: '气态', energy: '加热', heat: '吸热▲' },
+  '液化': { from: '气态', to: '液态', energy: '冷却', heat: '放热▼' },
+  '升华': { from: '固态', to: '气态', energy: '加热', heat: '吸热▲' },
+  '凝华': { from: '气态', to: '固态', energy: '冷却', heat: '放热▼' },
+};
+
+const INTERFERENCES = {
+  '保温杯': { desc: '对手下次出变化牌需多付 1 张能量牌' },
+  '风口':   { desc: '对手下回合只能出「汽化」' },
+  '热浪':   { desc: '弃掉对手 1 张冷却牌' },
+  '寒流':   { desc: '弃掉对手 1 张加热牌' },
+};
+
+const CHANGE_COUNT = { '熔化': 3, '凝固': 3, '汽化': 3, '液化': 3, '升华': 2, '凝华': 2 };
+
+let deck = [], discard = [], players, current, gameId = 0, busy = false;
+let cardUid = 0;
+
+/* ================= 牌组 ================= */
+function buildDeck() {
+  const cards = [];
+  const add = (name, type) => cards.push({ id: ++cardUid, name, type });
+  for (let i = 0; i < 10; i++) add('加热', 'energy');
+  for (let i = 0; i < 10; i++) add('冷却', 'energy');
+  for (const [name, n] of Object.entries(CHANGE_COUNT))
+    for (let i = 0; i < n; i++) add(name, 'change');
+  for (const name of Object.keys(INTERFERENCES)) add(name, 'interf');
+  return shuffle(cards);
+}
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function draw(n) {
+  const got = [];
+  for (let i = 0; i < n; i++) {
+    if (deck.length === 0) {
+      if (discard.length === 0) break;
+      deck = shuffle(discard.splice(0));
+      log('牌堆已空，弃牌堆洗回，重新发牌！', 'info');
+    }
+    got.push(deck.pop());
+  }
+  return got;
+}
+
+/* ================= 开局 ================= */
+function restart() {
+  gameId++;
+  deck = buildDeck(); discard = [];
+  players = [
+    { name: '玩家一', score: 0, state: '固态', hand: [], forced: null, extraCost: false, streak: 0 },
+    { name: '玩家二', score: 0, state: '固态', hand: [], forced: null, extraCost: false, streak: 0 },
+  ];
+  if (document.getElementById('modeSel').value === 'ai') players[1].name = '🤖 电脑';
+  players.forEach(p => p.hand = draw(8));
+  current = 0;
+  document.getElementById('winOverlay').classList.remove('show');
+  document.getElementById('logbox').innerHTML = '';
+  log('对局开始！双方物质均为固态，先到 10 分获胜。', 'gold');
+  render();
+  maybeAI();
+}
+
+/* ================= 出牌逻辑 ================= */
+function findEnergy(hand, type, count = 1) {
+  const ids = [];
+  for (const c of hand) if (c.type === 'energy' && c.name === type) ids.push(c.id);
+  return ids.length >= count ? ids.slice(0, count) : null;
+}
+
+function removeCards(player, ids) {
+  const removed = player.hand.filter(c => ids.includes(c.id));
+  player.hand = player.hand.filter(c => !ids.includes(c.id));
+  discard.push(...removed);
+}
+
+function playChange(playerIdx, cardId) {
+  if (busy) return;
+  if (playerIdx !== current) { toast('还没轮到你出牌哦', ''); return; }
+  const p = players[playerIdx], opp = players[1 - playerIdx];
+  const card = p.hand.find(c => c.id === cardId);
+  if (!card) return;
+
+  // 风口强制
+  if (p.forced === '风口' && card.name !== '汽化') {
+    toast('被「风口」控制！', '本回合只能打出「汽化」，否则只能跳过');
+    return;
+  }
+
+  const rule = CHANGES[card.name];
+  if (!rule) return;
+
+  // 合法性判定 1：起点状态
+  if (p.state !== rule.from) {
+    const hint = (p.state === '液态' && rule.to === '固态' && card.name === '凝华')
+      ? '凝华是气态直接变固态，不经过液态！' : '';
+    toast(`❌ ${card.name}需要从「${rule.from}」开始，你现在是「${p.state}」`, hint || `想一想：${p.state}要完成${card.name}，中间该先变成什么？`);
+    return;
+  }
+
+  // 合法性判定 2：能量牌
+  const need = p.extraCost ? 2 : 1;
+  const energyIds = findEnergy(p.hand, rule.energy, need);
+  if (!energyIds) {
+    toast(`缺少 ${need} 张「${rule.energy}」牌`, p.extraCost ? '保温杯生效：这次要多付 1 张能量牌！' : '能量牌（加热/冷却）是出变化牌的燃料');
+    return;
+  }
+
+  // 成功执行
+  removeCards(p, [cardId, ...energyIds]);
+  p.state = rule.to;
+  p.extraCost = false;
+  if (p.forced === '风口') p.forced = null;
+  p.score += 2;
+  p.streak++;
+  let bonusMsg = '';
+  if (p.streak >= 3) { p.score += 3; p.streak = 0; bonusMsg = ' —— 🔥 三连击达成，额外 +3 分！'; }
+  log(`${p.name} 打出「${card.name}」（${rule.from}→${rule.to}，${rule.heat}）+2 分${bonusMsg}`, 'good');
+  popState(playerIdx);
+  render();
+  checkWin();
+  if (document.getElementById('winOverlay').classList.contains('show')) return;
+  endTurn();
+}
+
+function playInterference(playerIdx, cardId) {
+  if (busy) return;
+  if (playerIdx !== current) { toast('还没轮到你出牌哦', ''); return; }
+  const p = players[playerIdx], opp = players[1 - playerIdx];
+  const card = p.hand.find(c => c.id === cardId);
+  if (!card || card.type !== 'interf') return;
+
+  if (p.forced === '风口') { toast('被「风口」控制！', '本回合只能打出「汽化」'); return; }
+
+  removeCards(p, [cardId]);
+  if (card.name === '保温杯') {
+    opp.extraCost = true;
+    log(`${p.name} 对 ${opp.name} 使用「保温杯」：下次出变化牌要多付 1 张能量牌！`, 'info');
+  } else if (card.name === '风口') {
+    opp.forced = '风口';
+    log(`${p.name} 对 ${opp.name} 使用「风口」：下回合只能出「汽化」！`, 'info');
+  } else if (card.name === '热浪') {
+    const target = opp.hand.filter(c => c.type === 'energy' && c.name === '冷却');
+    if (target.length) {
+      const victim = target[Math.floor(Math.random() * target.length)];
+      removeCards(opp, [victim.id]);
+      log(`${p.name} 的「热浪」烧掉了 ${opp.name} 的 1 张「冷却」牌！`, 'info');
+    } else log(`${p.name} 的「热浪」落空了——${opp.name} 手里没有冷却牌。`, 'info');
+  } else if (card.name === '寒流') {
+    const target = opp.hand.filter(c => c.type === 'energy' && c.name === '加热');
+    if (target.length) {
+      const victim = target[Math.floor(Math.random() * target.length)];
+      removeCards(opp, [victim.id]);
+      log(`${p.name} 的「寒流」冻掉了 ${opp.name} 的 1 张「加热」牌！`, 'info');
+    } else log(`${p.name} 的「寒流」落空了——${opp.name} 手里没有加热牌。`, 'info');
+  }
+  render();
+  endTurn();
+}
+
+function passTurn() {
+  if (busy) return;
+  const p = players[current];
+  if (p.forced === '风口') {
+    log(`${p.name} 无法完成「汽化」，被风口吹过了回合。`, 'bad');
+    p.forced = null;
+  } else {
+    log(`${p.name} 跳过回合。`, 'info');
+  }
+  p.streak = 0;
+  const got = draw(1);
+  p.hand.push(...got);
+  render();
+  endTurn();
+}
+
+function endTurn() {
+  const p = players[current];
+  const got = draw(2);
+  p.hand.push(...got);
+  current = 1 - current;
+  render();
+  maybeAI();
+}
+
+/* ================= 电脑 AI ================= */
+function maybeAI() {
+  if (document.getElementById('modeSel').value !== 'ai' || current !== 1) return;
+  busy = true;
+  setTimeout(() => {
+    busy = false;
+    aiMove();
+  }, 900);
+}
+
+function aiMove() {
+  const p = players[1], opp = players[0];
+  // 风口强制
+  if (p.forced === '风口') {
+    const card = p.hand.find(c => c.name === '汽化');
+    const rule = CHANGES['汽化'];
+    if (card && p.state === rule.from) {
+      const need = p.extraCost ? 2 : 1;
+      const eids = findEnergy(p.hand, rule.energy, need);
+      if (eids) { playChangeAI(card.id, eids, rule, card.name); return; }
+    }
+    p.forced = null; p.streak = 0;
+    log('🤖 无法完成「汽化」，被风口吹过了回合。', 'bad');
+    p.hand.push(...draw(1));
+    render(); endTurn(); return;
+  }
+  // 找合法变化
+  for (const card of p.hand) {
+    const rule = CHANGES[card.name];
+    if (!rule || p.state !== rule.from) continue;
+    const need = p.extraCost ? 2 : 1;
+    const eids = findEnergy(p.hand, rule.energy, need);
+    if (eids) { playChangeAI(card.id, eids, rule, card.name); return; }
+  }
+  // 出干扰牌
+  const interf = p.hand.find(c => c.type === 'interf');
+  if (interf && (opp.streak >= 1 || Math.random() < .5)) { playInterference(1, interf.id); return; }
+  // 跳过
+  log('🤖 跳过回合。', 'info');
+  p.streak = 0;
+  p.hand.push(...draw(1));
+  render(); endTurn();
+}
+
+function playChangeAI(cardId, energyIds, rule, name) {
+  const p = players[1];
+  removeCards(p, [cardId, ...energyIds]);
+  p.state = rule.to;
+  p.extraCost = false;
+  p.score += 2; p.streak++;
+  let bonusMsg = '';
+  if (p.streak >= 3) { p.score += 3; p.streak = 0; bonusMsg = ' —— 🔥 三连击达成，额外 +3 分！'; }
+  log(`🤖 打出「${name}」（${rule.from}→${rule.to}，${rule.heat}）+2 分${bonusMsg}`, 'good');
+  popState(1);
+  render();
+  checkWin();
+  if (document.getElementById('winOverlay').classList.contains('show')) return;
+  endTurn();
+}
+
+/* ================= 渲染 ================= */
+function cardHTML(c) {
+  let tag = '', desc = '', cls = c.type;
+  if (c.type === 'energy') {
+    cls = c.name === '加热' ? 'heat' : 'cool';
+    tag = `<span class="ctag">能量 · ${c.name === '加热' ? '吸热▲' : '放热▼'}</span>`;
+    desc = '出变化牌的燃料';
+  } else if (c.type === 'change') {
+    const r = CHANGES[c.name];
+    tag = `<span class="ctag">${r.heat}</span>`;
+    desc = `${r.from} → ${r.to}<br>需配「${r.energy}」牌`;
+  } else {
+    tag = `<span class="ctag">干扰</span>`;
+    desc = INTERFERENCES[c.name].desc;
+  }
+  return `<div class="card ${cls}" onclick="onCard(${c.id})">
+    <div class="cname">${c.name}</div>${tag}<div class="cdesc">${desc}</div></div>`;
+}
+
+function render() {
+  const modeAI = document.getElementById('modeSel').value === 'ai';
+  players.forEach((p, i) => {
+    document.getElementById('name' + i).textContent = p.name;
+    document.getElementById('score' + i).textContent = p.score + ' 分';
+    document.getElementById('icon' + i).textContent = STATE_EMOJI[p.state];
+    document.getElementById('label' + i).textContent = p.state;
+    document.getElementById('streak' + i).textContent = p.streak > 0 ? `🔥 连击 x${p.streak}` : '';
+    document.getElementById('hand' + i).innerHTML = p.hand.map(cardHTML).join('') ||
+      '<div style="color:#8899bb;font-size:13px;align-self:center;">（手牌已空）</div>';
+    let b = '';
+    if (p.extraCost) b += '<span class="badge">🥤 保温杯：下次多付 1 能量</span>';
+    if (p.forced === '风口') b += '<span class="badge wind">🍃 风口：只能出「汽化」</span>';
+    document.getElementById('badges' + i).innerHTML = b;
+    const panel = document.getElementById('panel' + i);
+    panel.classList.toggle('active', i === current);
+    panel.classList.toggle('done', modeAI && i === 1);
+  });
+  document.getElementById('deckCnt').textContent = deck.length;
+  document.getElementById('turnHint').textContent = `轮到 ${players[current].name} 出牌`;
+  document.getElementById('passBtn').disabled = (modeAI && current === 1);
+  document.getElementById('passBtn').style.opacity = (modeAI && current === 1) ? .4 : 1;
+}
+
+function onCard(cardId) {
+  if (busy) return;
+  for (let i = 0; i < 2; i++) {
+    const card = players[i].hand.find(c => c.id === cardId);
+    if (!card) continue;
+    if (card.type === 'change') playChange(i, cardId);
+    else if (card.type === 'interf') playInterference(i, cardId);
+    else toast('能量牌会自动消耗', '点击一张变化牌即可，系统自动配对所需能量');
+    return;
+  }
+}
+
+/* ================= 辅助 ================= */
+function log(msg, cls = 'info') {
+  const box = document.getElementById('logbox');
+  const div = document.createElement('div');
+  div.className = 'log-' + cls;
+  div.textContent = msg;
+  box.prepend(div);
+}
+
+let toastTimer;
+function toast(msg, tip) {
+  const t = document.getElementById('toast');
+  t.innerHTML = msg + (tip ? `<span class="tip">💡 ${tip}</span>` : '');
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+function popState(i) {
+  const el = document.getElementById('icon' + i);
+  el.classList.remove('pop');
+  void el.offsetWidth;
+  el.classList.add('pop');
+}
+
+function checkWin() {
+  const w = players.find(p => p.score >= 10);
+  if (w) {
+    document.getElementById('winTitle').textContent = `🎉 ${w.name} 获胜！`;
+    document.getElementById('winDetail').textContent =
+      `最终比分 ${players[0].score} : ${players[1].score} —— 三态变化，尽在掌控！`;
+    document.getElementById('winOverlay').classList.add('show');
+  }
+}
+
+restart();
+</script>
+</body>
+</html>
